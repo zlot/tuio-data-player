@@ -36,9 +36,6 @@ float scale_factor = 1;
 int warningTextAlpha = 255;
 PFont font;
 
-boolean verbose = false; // print console debug messages
-int PORT = 3333;
-
 HashMap<Integer, RecordedCursor> recordedCursors;
 String[] lines;
 
@@ -63,7 +60,6 @@ void loadDataFromFile() {
 
 class RecordedCursor {
   public int id;
-//  public float x,y; // note these are normalised x,y vals
   private ArrayList<PVector> points;
   
   RecordedCursor(int _id, PVector point) {
