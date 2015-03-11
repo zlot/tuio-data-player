@@ -28,11 +28,6 @@
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-// import the TUIO library
-import TUIO.*;
-// declare a TuioProcessing client
-TuioProcessing tuioClient;
-
 // these are some helper variables which are used
 // to create scalable graphical feedback
 float cursor_size = 15;
@@ -57,7 +52,6 @@ void setup()
   frameRate(60);
   font = createFont("Arial", 18);
   scale_factor = height/table_size;
-  tuioClient  = new TuioProcessing(this, PORT);
   
   recordedCursors = new HashMap<Integer, RecordedCursor>();
   loadDataFromFile();
@@ -149,51 +143,16 @@ void draw() {
   for(RecordedCursor c : recordedCursors.values()) {
     c.draw();
   }
-  
-  
-   ArrayList<TuioCursor> tuioCursorList = tuioClient.getTuioCursorList();
-   for (int i=0;i<tuioCursorList.size();i++) {
-      TuioCursor tcur = tuioCursorList.get(i);
-      ArrayList<TuioPoint> pointList = tcur.getPath();
-      
-      if (pointList.size()>0) {
-        stroke(0,0,255);
-        TuioPoint start_point = pointList.get(0);
-        for (int j=0;j<pointList.size();j++) {
-           TuioPoint end_point = pointList.get(j);
-           line(start_point.getScreenX(width),start_point.getScreenY(height),end_point.getScreenX(width),end_point.getScreenY(height));
-           start_point = end_point;
-        }
-        stroke(192,192,192);
-        fill(192,192,192);
-        ellipse( tcur.getScreenX(width), tcur.getScreenY(height),cur_size,cur_size);
-        fill(0);
-        text(""+ tcur.getCursorID(),  tcur.getScreenX(width)-5,  tcur.getScreenY(height)+5);
-      }
-   }
 }
 
 
-void addTuioCursor(TuioCursor tcur) {
-  if (verbose) println("add cur "+tcur.getCursorID()+" ("+tcur.getSessionID()+ ") " +tcur.getX()+" "+tcur.getY());
-}
-
-void updateTuioCursor (TuioCursor tcur) {
-  if (verbose) println("set cur "+tcur.getCursorID()+" ("+tcur.getSessionID()+ ") " +tcur.getX()+" "+tcur.getY()
-          +" "+tcur.getMotionSpeed()+" "+tcur.getMotionAccel());
-}
-
-void removeTuioCursor(TuioCursor tcur) {
-  if (verbose) println("del cur "+tcur.getCursorID()+" ("+tcur.getSessionID()+")");
-}
-
-
-// called at the end of each TUIO frame
-void refresh(TuioTime frameTime) {
-  if (verbose) println("frame #"+frameTime.getFrameID()+" ("+frameTime.getTotalMilliseconds()+")");
-  redraw();
-}
-
-void keyPressed() {
- 
-}
+//void addTuioCursor(TuioCursor tcur) {
+//  if (verbose) println("add cur "+tcur.getCursorID()+" ("+tcur.getSessionID()+ ") " +tcur.getX()+" "+tcur.getY());
+//}
+//void updateTuioCursor (TuioCursor tcur) {
+//  if (verbose) println("set cur "+tcur.getCursorID()+" ("+tcur.getSessionID()+ ") " +tcur.getX()+" "+tcur.getY()
+//          +" "+tcur.getMotionSpeed()+" "+tcur.getMotionAccel());
+//}
+//void removeTuioCursor(TuioCursor tcur) {
+//  if (verbose) println("del cur "+tcur.getCursorID()+" ("+tcur.getSessionID()+")");
+//}
