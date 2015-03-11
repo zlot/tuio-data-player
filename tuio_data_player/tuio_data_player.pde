@@ -38,12 +38,13 @@ TuioProcessing tuioClient;
 float cursor_size = 15;
 float table_size = 1200;
 float scale_factor = 1;
+int warningTextAlpha = 255;
 PFont font;
 
 boolean verbose = false; // print console debug messages
 int PORT = 3333;
 
-ArrayList<RecordedCursor> recordedCursors;
+HashMap<Integer, RecordedCursor> recordedCursors;
 String[] lines;
 
 void setup()
@@ -58,7 +59,7 @@ void setup()
   scale_factor = height/table_size;
   tuioClient  = new TuioProcessing(this, PORT);
   
-  recordedCursors = new ArrayList<RecordedCursor>();
+  recordedCursors = new HashMap<Integer, RecordedCursor>();
   loadDataFromFile();
 }
 
@@ -99,41 +100,53 @@ class RecordedCursor {
 }
 
 void runThroughData() {
-    String[] datum = split(lines[frameCount % lines.length], ' ');
-    
-    if(!(datum.length > 6))
-      return;
-    
-    int id = int(datum[3].substring(1,4));
-    println(id);
-    float x = float(datum[4]);
-    float y = float(datum[5]);
-    
-    boolean addToRecordedPoints = true;
-    // check if recorded point id exists in recordedPoints
-    for(RecordedCursor c : recordedCursors) {
-      if(c.id == id) {
-        // add to trackingData
-        c.addTrackingPoint(new PVector(x,y));
-        addToRecordedPoints = false;
-        break;
-      }
+    if(frameCount % lines.length == 0) {
+      // we've run through all the data. Start again and warn!
+      recordedCursors.clear();
+      warningTextAlpha = 255;
     }
-    if(addToRecordedPoints) {
+    String[] datum = split(lines[frameCount-1 % lines.length], ' ');
+    
+    String command = datum[0];
+    int id = int(datum[3].substring(1,4));
+    
+    if(command.equals("add")) {
+      float x = float(datum[4]);
+      float y = float(datum[5]);
       RecordedCursor newC = new RecordedCursor(id, new PVector(x,y));
-      recordedCursors.add(newC); 
-    }  
+      recordedCursors.put(id, newC); 
+    } else if(command.equals("set")) {
+      float x = float(datum[4]);
+      float y = float(datum[5]);
+      recordedCursors.get(id).addTrackingPoint(new PVector(x,y));
+    } else if(command.equals("del")) {
+        recordedCursors.remove(id);
+    }
+}
+
+void showDataFinishedText() {
+  if(warningTextAlpha > 0) {
+    textSize(30);
+    pushStyle();
+    fill(0,0,0,warningTextAlpha);
+    text("DATA FINISHED. REPLAYING", width/7, height/2);
+    popStyle();
+    warningTextAlpha -= 2;
+  } else {
+    
+  }
 }
 
 void draw() {
   background(255);
+  if(warningTextAlpha > 0) showDataFinishedText();
+  
   textFont(font,18*scale_factor);
   float cur_size = cursor_size*scale_factor; 
   
   runThroughData();
-  
-  
-  for(RecordedCursor c : recordedCursors) {
+   
+  for(RecordedCursor c : recordedCursors.values()) {
     c.draw();
   }
   
