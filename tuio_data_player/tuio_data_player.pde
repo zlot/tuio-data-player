@@ -33,14 +33,14 @@
 float cursor_size = 15;
 float table_size = 1200;
 float scale_factor = 1;
-int warningTextAlpha = 255;
-PFont font;
+int warningTextAlpha = 0;
+String dataFile = "3334.txt";
 
+PFont font;
 HashMap<Integer, RecordedCursor> recordedCursors;
 String[] lines;
 
-void setup()
-{
+void setup() {
   // GUI setup
   noCursor();
   size(600,600);
@@ -55,38 +55,7 @@ void setup()
 }
 
 void loadDataFromFile() {
-  lines = loadStrings("3333.txt");
-}
-
-class RecordedCursor {
-  public int id;
-  private ArrayList<PVector> points;
-  
-  RecordedCursor(int _id, PVector point) {
-    id = _id;
-    points = new ArrayList<PVector>();
-    points.add(point);
-  }
-  
-  void addTrackingPoint(PVector p) {
-    points.add(p);
-  }
-  
-  void draw() {
-    stroke(0, 180);
-    PVector startPoint = points.get(0);
-    for(PVector p : points) {
-      // unnormalise vals
-      line(startPoint.x*width, startPoint.y*height, p.x*width, p.y*height);
-      startPoint = p;
-    }
-    
-    PVector lastKnownPoint = points.get(points.size()-1);
-    ellipse(lastKnownPoint.x*width, lastKnownPoint.y*height, 10, 10);
-    fill(0);
-    text(""+ id,  lastKnownPoint.x*width+10,  lastKnownPoint.y*height+5);
-  }
-  
+  lines = loadStrings(dataFile);
 }
 
 void runThroughData() {
@@ -123,8 +92,6 @@ void showDataFinishedText() {
     text("DATA FINISHED. REPLAYING", width/7, height/2);
     popStyle();
     warningTextAlpha -= 2;
-  } else {
-    
   }
 }
 
@@ -136,10 +103,41 @@ void draw() {
   float cur_size = cursor_size*scale_factor; 
   
   runThroughData();
-   
   for(RecordedCursor c : recordedCursors.values()) {
     c.draw();
   }
+}
+
+
+class RecordedCursor {
+  public int id;
+  private ArrayList<PVector> points;
+  
+  RecordedCursor(int _id, PVector point) {
+    id = _id;
+    points = new ArrayList<PVector>();
+    points.add(point);
+  }
+  
+  void addTrackingPoint(PVector p) {
+    points.add(p);
+  }
+  
+  void draw() {
+    stroke(0, 180);
+    PVector startPoint = points.get(0);
+    for(PVector p : points) {
+      // unnormalise vals
+      line(startPoint.x*width, startPoint.y*height, p.x*width, p.y*height);
+      startPoint = p;
+    }
+    
+    PVector lastKnownPoint = points.get(points.size()-1);
+    ellipse(lastKnownPoint.x*width, lastKnownPoint.y*height, 10, 10);
+    fill(0);
+    text(""+ id,  lastKnownPoint.x*width+10,  lastKnownPoint.y*height+5);
+  }
+  
 }
 
 
