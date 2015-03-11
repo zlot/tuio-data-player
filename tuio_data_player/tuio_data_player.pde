@@ -90,12 +90,13 @@ class RecordedCursor {
 }
 
 void runThroughData() {
-    if(frameCount % lines.length == 0) {
+   int lineNumber = (frameCount-1) % (lines.length-1);
+   if(lineNumber == 0) {
       // we've run through all the data. Start again and warn!
       recordedCursors.clear();
       warningTextAlpha = 255;
     }
-    String[] datum = split(lines[frameCount-1 % lines.length], ' ');
+    String[] datum = split(lines[lineNumber], ' ');
     
     String command = datum[0];
     int id = int(datum[3].substring(1,4));
