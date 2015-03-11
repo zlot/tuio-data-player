@@ -43,7 +43,7 @@ PFont font;
 boolean verbose = false; // print console debug messages
 int PORT = 3333;
 
-ArrayList<RecordedPoint> recordedPoints;
+ArrayList<RecordedCursor> recordedCursors;
 String[] lines;
 
 void setup()
@@ -58,55 +58,42 @@ void setup()
   scale_factor = height/table_size;
   tuioClient  = new TuioProcessing(this, PORT);
   
-  recordedPoints = new ArrayList<RecordedPoint>();
+  recordedCursors = new ArrayList<RecordedCursor>();
   loadDataFromFile();
 }
 
 void loadDataFromFile() {
   lines = loadStrings("3333.txt");
-  
-//  for(int i=0; i<lines.length; i++) {
-//    String[] datum = split(lines[i], ' ');
-//    
-//    if(!(datum.length > 6))
-//      continue;
-//    
-//    int id = int(datum[3]);
-//    float x = float(datum[4]);
-//    float y = float(datum[5]);
-//    
-//    boolean addToRecordedPoints = true;
-//    // check if recorded point id exists in recordedPoints
-//    for(RecordedPoint p : recordedPoints) {
-//      if(p.id == id) {
-//        p.x = x;
-//        p.y = y;
-//        addToRecordedPoints = false;
-//        break;
-//      }
-//    }
-//    if(addToRecordedPoints) {
-//      RecordedPoint newP = new RecordedPoint(id, x, y);
-//      recordedPoints.add(newP); 
-//    }
-//  }
 }
 
-class RecordedPoint {
+class RecordedCursor {
   public int id;
-  public float x,y; // note these are normalised x,y vals
+//  public float x,y; // note these are normalised x,y vals
+  private ArrayList<PVector> points;
   
-  RecordedPoint(int _id, float _x, float _y) {
+  RecordedCursor(int _id, PVector point) {
     id = _id;
-    x = _x;
-    y = _y;
+    points = new ArrayList<PVector>();
+    points.add(point);
+  }
+  
+  void addTrackingPoint(PVector p) {
+    points.add(p);
   }
   
   void draw() {
-    // unnormalise vals
-    ellipse(x*width, y*height, 10, 10);
+    stroke(0, 180);
+    PVector startPoint = points.get(0);
+    for(PVector p : points) {
+      // unnormalise vals
+      line(startPoint.x*width, startPoint.y*height, p.x*width, p.y*height);
+      startPoint = p;
+    }
+    
+    PVector lastKnownPoint = points.get(points.size()-1);
+    ellipse(lastKnownPoint.x*width, lastKnownPoint.y*height, 10, 10);
     fill(0);
-    text(""+ id,  x*width+10,  y*height+5);
+    text(""+ id,  lastKnownPoint.x*width+10,  lastKnownPoint.y*height+5);
   }
   
 }
@@ -124,17 +111,17 @@ void runThroughData() {
     
     boolean addToRecordedPoints = true;
     // check if recorded point id exists in recordedPoints
-    for(RecordedPoint p : recordedPoints) {
-      if(p.id == id) {
-        p.x = x;
-        p.y = y;
+    for(RecordedCursor c : recordedCursors) {
+      if(c.id == id) {
+        // add to trackingData
+        c.addTrackingPoint(new PVector(x,y));
         addToRecordedPoints = false;
         break;
       }
     }
     if(addToRecordedPoints) {
-      RecordedPoint newP = new RecordedPoint(id, x, y);
-      recordedPoints.add(newP); 
+      RecordedCursor newC = new RecordedCursor(id, new PVector(x,y));
+      recordedCursors.add(newC); 
     }  
 }
 
@@ -146,8 +133,8 @@ void draw() {
   runThroughData();
   
   
-  for(RecordedPoint p : recordedPoints) {
-    p.draw();
+  for(RecordedCursor c : recordedCursors) {
+    c.draw();
   }
   
   
